@@ -1,28 +1,8 @@
 package code_analyzer
 
-import (
-	"go/ast"
-	"go/parser"
-	"go/token"
-
-	"golang.org/x/tools/go/ast/inspector"
-	"fmt"
-
-	"io/ioutil"
-)
-
-
-type Method {
-	Name string
-	Arguments
+type CodeAnalyzer struct {
 }
 
-type Code struct {
-	InterfaceName string
-
-
+func NewCodeAnalizer() (*CodeAnalyzer, error) {
+	return nil, nil
 }
-
-func
-
-
