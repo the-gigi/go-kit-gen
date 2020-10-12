@@ -10,6 +10,7 @@ var _ = Describe("Parser tests", func() {
 		parser := Parser{}
 		code, err := parser.Parse("test.go")
 		Ω(err).Should(BeNil())
-		Ω(code).Should(BeNil())
+		Ω(code.Interfaces).Should(BeNil())
+		Ω(code.Functions).Should(BeNil())
 	})
 })

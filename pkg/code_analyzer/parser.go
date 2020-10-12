@@ -52,7 +52,6 @@ func printFunc(name string, f *ast.FuncType) {
 
 func parseCallable(name string, f *ast.FuncType) string {
 	params := f.Params.List
-	results := f.Results.List
 	parts := []string{"func ", name, "("}
 	fmt.Println("name:", name)
 	fmt.Println("params:")
@@ -73,6 +72,7 @@ func parseCallable(name string, f *ast.FuncType) string {
 		}
 	}
 
+	results := f.Results.List
 	if len(results) == 1 {
 		parts = append(parts, " ")
 		appendResult(results[0])
@@ -151,6 +151,78 @@ func (p *Parser) Parse(filename string) (result *Code, err error) {
 	}
 
 	// Inspect the AST and print all identifiers and literals.
-	ast.Inspect(f, nodeFunc)
+	result = &Code{}
+	//ast.Inspect(f, nodeFunc)
+	err = p.parseFile(f, result)
+	return
+}
+
+func (p *Parser) parseFile(f *ast.File, code *Code) (err error) {
+	ast.Inspect(f, func(n ast.Node) bool {
+		if n == nil {
+			return false
+		}
+		switch x := n.(type) {
+		case *ast.ArrayType:
+			//fmt.Println("%v", x)
+		case *ast.FuncDecl:
+			printFunc(x.Name.String(), x.Type)
+		case *ast.FuncType:
+			printFunc("func", x)
+
+		case *ast.TypeSpec:
+			specType := x.Type
+			switch t := specType.(type) {
+			case *ast.InterfaceType:
+				name := x.Name.String()
+				result := p.parseInterface(name, t)
+				fmt.Println(result)
+			}
+		default:
+			//fmt.Printf("%v\n", x)
+			//fmt.Println("--------------")
+		}
+
+		return true
+	})
+
+	return
+}
+
+func (p *Parser) parseCallable(callable *ast.Field) (result Function) {
+	result.Name = callable.Names[0].Name
+	ft := callable.Type.(*ast.FuncType)
+	params := ft.Params.List
+	for _, p := range params {
+		argType := fmt.Sprintf("%v", p.Type)
+		arg := Argument{
+			Name: p.Names[0].String(),
+			Type: argType,
+		}
+		result.Arguments = append(result.Arguments, arg)
+	}
+
+	results := ft.Results.List
+	for _, r := range results {
+		returnValue := ReturnValue{
+			Type: fmt.Sprintf("%v", r.Type),
+		}
+		if len(r.Names) > 0 {
+			returnValue.Name = r.Names[0].Name
+		}
+		result.Result = append(result.Result, returnValue)
+	}
+
+	return
+}
+
+func (p *Parser) parseInterface(name string, it *ast.InterfaceType) (result Interface) {
+	result.Name = name
+	methods := it.Methods.List
+	for _, m := range methods {
+		f := p.parseCallable(m)
+		result.Methods = append(result.Methods, f)
+	}
+
 	return
 }

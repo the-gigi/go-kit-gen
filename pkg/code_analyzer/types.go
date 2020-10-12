@@ -1,17 +1,32 @@
 package code_analyzer
 
-type Param struct {
+type Argument struct {
 	Name string
 	Type string
 }
 
-type Method struct {
+type ReturnValue struct {
+	Name string
+	Type string
+}
+
+type Function struct {
 	Name      string
-	Arguments []interface{}
-	Result    []interface{}
+	Arguments []Argument
+	Result    []ReturnValue
+}
+
+type Method struct {
+	Function
+	Receiver string
+}
+
+type Interface struct {
+	Name    string
+	Methods []Function
 }
 
 type Code struct {
-	InterfaceName string
-	Methods       []Method
+	Functions  []Function
+	Interfaces []Interface
 }
