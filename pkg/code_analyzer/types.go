@@ -1,14 +1,12 @@
 package code_analyzer
 
-type Argument struct {
+type Field struct {
 	Name string
 	Type string
 }
 
-type ReturnValue struct {
-	Name string
-	Type string
-}
+type Argument = Field
+type ReturnValue = Field
 
 type Function struct {
 	Name      string
@@ -26,6 +24,10 @@ type Interface struct {
 	Methods []Function
 }
 
+type Struct struct {
+	Name       string
+	FieldNames []string
+}
 type Code struct {
 	Functions  []Function
 	Interfaces []Interface

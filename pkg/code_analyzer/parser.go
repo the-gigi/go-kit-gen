@@ -7,6 +7,8 @@ import (
 	"go/token"
 	"io/ioutil"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Parser struct {
@@ -14,7 +16,6 @@ type Parser struct {
 
 func printFunc(name string, f *ast.FuncType) {
 	params := f.Params.List
-	results := f.Results.List
 	parts := []string{"func ", name, "("}
 	fmt.Println("name:", name)
 	fmt.Println("params:")
@@ -35,15 +36,18 @@ func printFunc(name string, f *ast.FuncType) {
 		}
 	}
 
-	if len(results) == 1 {
-		parts = append(parts, " ")
-		appendResult(results[0])
-	} else if len(results) > 1 {
-		parts = append(parts, " (")
-		for _, r := range results {
-			appendResult(r)
+	if f.Results != nil {
+		results := f.Results.List
+		if len(results) == 1 {
+			parts = append(parts, " ")
+			appendResult(results[0])
+		} else if len(results) > 1 {
+			parts = append(parts, " (")
+			for _, r := range results {
+				appendResult(r)
+			}
+			parts = append(parts, ")")
 		}
-		parts = append(parts, ")")
 	}
 
 	s := strings.Join(parts, "")
@@ -121,6 +125,8 @@ func nodeFunc(n ast.Node) bool {
 
 	case *ast.FuncType:
 		printFunc("func", x)
+		//result := parseCallable()
+		//fmt.Println(result)
 
 	case *ast.TypeSpec:
 		specType := x.Type
@@ -166,17 +172,24 @@ func (p *Parser) parseFile(f *ast.File, code *Code) (err error) {
 		case *ast.ArrayType:
 			//fmt.Println("%v", x)
 		case *ast.FuncDecl:
-			printFunc(x.Name.String(), x.Type)
-		case *ast.FuncType:
-			printFunc("func", x)
+			//printFunc(x.Name.String(), x.Type)
+			name := x.Name.String()
+			t := x.Type
+			result := p.parseFunction(name, nil, t.Params, t.Results)
+			code.Functions = append(code.Functions, result)
+
+		//case *ast.FuncType:
+		//	printFunc("func", x)
 
 		case *ast.TypeSpec:
 			specType := x.Type
 			switch t := specType.(type) {
 			case *ast.InterfaceType:
 				name := x.Name.String()
-				result := p.parseInterface(name, t)
-				fmt.Println(result)
+				var result Interface
+				result, err = p.parseInterface(name, t)
+				code.Interfaces = append(code.Interfaces, result)
+				//fmt.Println(result)
 			}
 		default:
 			//fmt.Printf("%v\n", x)
@@ -189,11 +202,12 @@ func (p *Parser) parseFile(f *ast.File, code *Code) (err error) {
 	return
 }
 
-func (p *Parser) parseCallable(callable *ast.Field) (result Function) {
-	result.Name = callable.Names[0].Name
-	ft := callable.Type.(*ast.FuncType)
-	params := ft.Params.List
-	for _, p := range params {
+func (p *Parser) parseFunction(name string,
+	receiver *ast.Field,
+	params *ast.FieldList,
+	results *ast.FieldList) (result Function) {
+	result.Name = name
+	for _, p := range params.List {
 		argType := fmt.Sprintf("%v", p.Type)
 		arg := Argument{
 			Name: p.Names[0].String(),
@@ -202,8 +216,11 @@ func (p *Parser) parseCallable(callable *ast.Field) (result Function) {
 		result.Arguments = append(result.Arguments, arg)
 	}
 
-	results := ft.Results.List
-	for _, r := range results {
+	if results == nil {
+		return
+	}
+
+	for _, r := range results.List {
 		returnValue := ReturnValue{
 			Type: fmt.Sprintf("%v", r.Type),
 		}
@@ -212,11 +229,21 @@ func (p *Parser) parseCallable(callable *ast.Field) (result Function) {
 		}
 		result.Result = append(result.Result, returnValue)
 	}
-
 	return
 }
 
-func (p *Parser) parseInterface(name string, it *ast.InterfaceType) (result Interface) {
+func (p *Parser) parseCallable(callable *ast.Field) (result Function) {
+	name := callable.Names[0].Name
+	ft := callable.Type.(*ast.FuncType)
+	result = p.parseFunction(name, nil, ft.Params, ft.Results)
+	return
+}
+
+func (p *Parser) parseInterface(name string, it *ast.InterfaceType) (result Interface, err error) {
+	if it == nil {
+		err = errors.New("missing interface type")
+		return
+	}
 	result.Name = name
 	methods := it.Methods.List
 	for _, m := range methods {
