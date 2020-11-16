@@ -1,8 +1,9 @@
-module github.com/the-gigi/kit-gen-go
+module github.com/the-gigi/go-kit-gen
 
 go 1.15
 
 require (
+	github.com/go-kit/kit v0.8.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/onsi/ginkgo v1.14.1

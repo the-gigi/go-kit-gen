@@ -12,7 +12,7 @@ var _ = Describe("Parser tests", func() {
 		parser = Parser{}
 	})
 	It("should parse function", func() {
-		code, err := parser.Parse("test_data/function.go")
+		code, err := parser.Parse("../test_data/function.go")
 		Ω(err).Should(BeNil())
 		Ω(code.Interfaces).Should(BeNil())
 		Ω(code.Functions).ShouldNot(BeNil())

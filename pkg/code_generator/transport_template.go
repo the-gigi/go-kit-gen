@@ -1,7 +1,5 @@
 package code_generator
 
-import ()
-
 const decodeTemplate = `
 func decode{{ name }}Request(_ context.Context, r interface{}) (interface{}, error) {
 	request := r.(*pb.{{ name }}Request)
