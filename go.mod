@@ -12,4 +12,5 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.4.0 // indirect
+	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 )

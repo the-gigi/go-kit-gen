@@ -9,5 +9,5 @@ import (
 
 func TestCodeAnalyzer(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CodeAnalyzerr Suite")
+	RunSpecs(t, "CodeAnalyzer Suite")
 }

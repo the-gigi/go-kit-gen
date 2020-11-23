@@ -1,9 +1,24 @@
-package code_generator
+package templates
+
+const header = `
+package {{ package_name }}
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+
+	"github.com/go-kit/kit/endpoint"
+	"github.com/pkg/errors"
+
+	"{{ interface_package_path }}"
+)
+`
 
 const decodeTemplate = `
 func decode{{ name }}Request(_ context.Context, r interface{}) (interface{}, error) {
 	request := r.(*pb.{{ name }}Request)
-	return om.{{ name }}Request{
+	return {{ interface_package_name }}.{{ name }}Request{
 		{{ fields }}
 	}, nil
 }
